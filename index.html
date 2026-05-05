@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Performans">
+<meta name="theme-color" content="#1E2761">
+<title>İşçi Performans Qiymətləndirməsi</title>
+<link rel="manifest" href="manifest.json">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --navy:    #1E2761;
+    --blue:    #2E75B6;
+    --blueLt:  #4A90D9;
+    --ice:     #CADCFC;
+    --accent:  #F4A261;
+    --green:   #2DC88F;
+    --red:     #E85D5D;
+    --bg:      #F4F7FC;
+    --card:    #FFFFFF;
+    --text:    #1a1f36;
+    --muted:   #6b7280;
+    --border:  #e2e8f0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Sora', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: 40px;
+  }
+
+  /* ── INSTALL BAR ── */
+  .install-bar {
+    background: linear-gradient(90deg, #1a2f5e, #253380);
+    padding: 10px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .install-inner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 440px;
+    margin: 0 auto;
+  }
+  .install-icon { font-size: 22px; flex-shrink: 0; }
+  .install-text { flex: 1; }
+  .install-text strong {
+    display: block;
+    font-size: 12.5px;
+    color: #fff;
+    font-weight: 600;
+  }
+  .install-text span {
+    font-size: 10.5px;
+    color: var(--ice);
+    opacity: 0.8;
+  }
+  .install-close {
+    background: rgba(255,255,255,0.12);
+    border: none;
+    color: #fff;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    font-size: 11px;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* ── INSTALL GUIDE MODAL ── */
+  .guide-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 100;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .guide-overlay.active { display: flex; }
+  .guide-sheet {
+    background: var(--card);
+    border-radius: 24px 24px 0 0;
+    padding: 24px 20px 36px;
+    width: 100%;
+    max-width: 440px;
+    animation: slideUp 0.3s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .guide-sheet h3 {
+    font-size: 16px;
+    color: var(--navy);
+    font-weight: 700;
+    margin-bottom: 18px;
+    text-align: center;
+  }
+  .guide-tab-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+  .guide-tab {
+    flex: 1;
+    padding: 9px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    background: transparent;
+    font-family: 'Sora', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .guide-tab.active {
+    border-color: var(--blue);
+    color: var(--blue);
+    background: #EEF4FF;
+  }
+  .guide-steps { display: none; }
+  .guide-steps.active { display: block; }
+  .guide-step {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .guide-step:last-child { border-bottom: none; }
+  .guide-num {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: var(--navy);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .guide-step p { font-size: 13px; line-height: 1.5; color: var(--text); }
+  .guide-step em { color: var(--blue); font-style: normal; font-weight: 600; }
+  .guide-close-btn {
+    width: 100%;
+    margin-top: 18px;
+    padding: 13px;
+    border: none;
+    border-radius: 12px;
+    background: var(--navy);
+    color: #fff;
+    font-family: 'Sora', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* ── INSTALL BUTTON in footer ── */
+  .install-footer-btn {
+    width: 100%;
+    padding: 14px;
+    border: 2px solid var(--blue);
+    border-radius: 14px;
+    background: transparent;
+    color: var(--blue);
+    font-family: 'Sora', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: linear-gradient(135deg, var(--navy) 0%, #253380 60%, var(--blue) 100%);
+    padding: 28px 20px 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+    top: -60px; right: -40px;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: rgba(244,162,97,0.12);
+    bottom: -30px; left: -20px;
+  }
+  .header h1 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.3px;
+    position: relative;
+    z-index: 1;
+  }
+  .header p {
+    font-size: 12px;
+    color: var(--ice);
+    margin-top: 5px;
+    opacity: 0.85;
+    position: relative;
+    z-index: 1;
+  }
+  .header .badge {
+    display: inline-block;
+    background: rgba(244,162,97,0.2);
+    border: 1px solid rgba(244,162,97,0.4);
+    color: var(--accent);
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-top: 10px;
+    letter-spacing: 0.5px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── CONTENT ── */
+  .content { padding: 20px 16px; max-width: 440px; margin: 0 auto; }
+
+  /* ── SECTION LABEL ── */
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--blue);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin: 22px 0 10px;
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 18px;
+    box-shadow: 0 2px 12px rgba(30,39,97,0.07);
+    border: 1px solid var(--border);
+    margin-bottom: 12px;
+  }
+
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .card-title .icon {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--blue), var(--navy));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; flex-shrink: 0;
+  }
+
+  /* ── SLIDER FIELD ── */
+  .field { margin-bottom: 16px; }
+  .field:last-child { margin-bottom: 0; }
+
+  .field-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .field-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .field-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--blue);
+    background: #EEF4FF;
+    padding: 2px 9px;
+    border-radius: 6px;
+    min-width: 38px;
+    text-align: center;
+  }
+  .field-desc {
+    font-size: 10.5px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  /* slider */
+  input[type=range] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--border);
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--blue);
+    box-shadow: 0 2px 6px rgba(46,117,182,0.4);
+    transition: transform 0.15s;
+  }
+  input[type=range]:active::-webkit-slider-thumb { transform: scale(1.2); }
+
+  /* tick labels */
+  .tick-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5px;
+  }
+  .tick {
+    font-size: 9.5px;
+    color: var(--muted);
+    text-align: center;
+    flex: 1;
+  }
+
+  /* ── TOGGLE (OverTime) ── */
+  .toggle-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .toggle-info { flex: 1; }
+  .toggle-info .field-label { font-size: 13px; }
+  .toggle-info small { font-size: 10.5px; color: var(--muted); }
+
+  .toggle-wrap { position: relative; }
+  .toggle-wrap input { opacity: 0; width: 0; height: 0; }
+  .toggle-wrap label {
+    display: block;
+    width: 50px; height: 27px;
+    background: var(--border);
+    border-radius: 30px;
+    cursor: pointer;
+    transition: background 0.25s;
+    position: relative;
+  }
+  .toggle-wrap label::after {
+    content: '';
+    position: absolute;
+    width: 21px; height: 21px;
+    border-radius: 50%;
+    background: #fff;
+    top: 3px; left: 3px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+    transition: left 0.25s;
+  }
+  .toggle-wrap input:checked + label { background: var(--red); }
+  .toggle-wrap input:checked + label::after { left: 26px; }
+
+  /* ── BUTTON ── */
+  .btn {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--navy), var(--blue));
+    color: #fff;
+    font-family: 'Sora', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: -0.2px;
+    transition: opacity 0.2s, transform 0.1s;
+    margin-top: 20px;
+    box-shadow: 0 4px 16px rgba(30,39,97,0.25);
+  }
+  .btn:active { transform: scale(0.98); opacity: 0.9; }
+  .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+  /* ── LOADER ── */
+  .loader {
+    display: none;
+    text-align: center;
+    padding: 32px 0;
+  }
+  .loader.active { display: block; }
+  .spinner {
+    width: 40px; height: 40px;
+    border: 3px solid var(--border);
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 12px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loader p { font-size: 13px; color: var(--muted); }
+
+  /* ── RESULT ── */
+  .result { display: none; }
+  .result.active { display: block; }
+
+  .result-card {
+    border-radius: 20px;
+    padding: 24px 20px;
+    margin-top: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .result-card.level-1 { background: linear-gradient(135deg, #E85D5D, #c0392b); }
+  .result-card.level-2 { background: linear-gradient(135deg, #f39c12, #e67e22); }
+  .result-card.level-3 { background: linear-gradient(135deg, var(--blue), var(--navy)); }
+  .result-card.level-4 { background: linear-gradient(135deg, #27ae60, #2DC88F); }
+
+  .result-card::before {
+    content: '';
+    position: absolute;
+    width: 150px; height: 150px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.07);
+    top: -40px; right: -30px;
+  }
+
+  .result-level {
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.75);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .result-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+    letter-spacing: -0.5px;
+  }
+  .result-sub {
+    font-size: 12.5px;
+    color: rgba(255,255,255,0.8);
+    margin-bottom: 18px;
+  }
+
+  /* stars */
+  .stars { font-size: 22px; margin-bottom: 18px; letter-spacing: 3px; }
+
+  /* probability bar */
+  .prob-section { margin-bottom: 14px; }
+  .prob-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 5px;
+  }
+  .prob-bar-bg {
+    background: rgba(255,255,255,0.2);
+    border-radius: 4px;
+    height: 7px;
+    overflow: hidden;
+  }
+  .prob-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: #fff;
+    transition: width 0.8s ease;
+  }
+
+  /* insight chips */
+  .insights {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 16px;
+  }
+  .chip {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 20px;
+    padding: 4px 11px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.9);
+    font-weight: 500;
+  }
+
+  /* explanation card */
+  .explanation {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 18px;
+    margin-top: 14px;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 12px rgba(30,39,97,0.06);
+  }
+  .explanation h4 {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 10px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .explanation p {
+    font-size: 12.5px;
+    line-height: 1.65;
+    color: #444;
+  }
+
+  /* factor breakdown */
+  .factor-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .factor-row:last-child { border-bottom: none; }
+  .factor-name { font-size: 11.5px; color: var(--text); flex: 1; font-weight: 500; }
+  .factor-bar-bg {
+    width: 90px;
+    height: 5px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .factor-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.6s ease;
+  }
+  .factor-imp { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); width: 28px; text-align: right; }
+
+  /* reset btn */
+  .btn-reset {
+    width: 100%;
+    padding: 13px;
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    background: transparent;
+    color: var(--navy);
+    font-family: 'Sora', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 12px;
+    transition: border-color 0.2s;
+  }
+  .btn-reset:active { border-color: var(--blue); }
+
+  /* ── DISCLAIMER ── */
+  .disclaimer {
+    font-size: 10px;
+    color: var(--muted);
+    text-align: center;
+    padding: 16px 20px 0;
+    line-height: 1.6;
+  }
+
+  /* error */
+  .error-box {
+    background: #fff5f5;
+    border: 1px solid #fed7d7;
+    border-radius: 12px;
+    padding: 14px;
+    font-size: 12.5px;
+    color: #c53030;
+    display: none;
+    margin-top: 16px;
+  }
+  .error-box.active { display: block; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>İşçi Performans Qiymətləndirməsi</h1>
+  <p>INX Future Inc · Random Forest Modeli</p>
+  <span class="badge">UNEC MBA · Tədqiqat Metodları</span>
+</div>
+
+  <div class="install-bar" id="installBar">
+    <div class="install-inner">
+      <span class="install-icon">📲</span>
+      <div class="install-text">
+        <strong>Telefona yüklə</strong>
+        <span>Brauzer → Paylaş → Ana Ekrana Əlavə Et</span>
+      </div>
+      <button class="install-close" onclick="document.getElementById('installBar').style.display='none'">✕</button>
+    </div>
+  </div>
+
+  <!-- ── MOTIVASIYA AMİLLƏRİ ── -->
+  <div class="section-label">Motivasiya Amilləri</div>
+
+  <!-- Maaş artımı -->
+  <div class="card">
+    <div class="card-title">
+      <div class="icon">💰</div>
+      Son Maaş Artımı
+    </div>
+    <div class="field">
+      <div class="field-header">
+        <div>
+          <div class="field-label">EmpLastSalaryHikePercent</div>
+          <div class="field-desc">Son dəfə əmək haqqının nə qədər artırıldığı</div>
+        </div>
+        <div class="field-value" id="val-salary">0%</div>
+      </div>
+      <input type="range" id="salary" min="0" max="25" value="0" step="1"
+             oninput="document.getElementById('val-salary').textContent=this.value+'%'">
+      <div class="tick-row">
+        <span class="tick">0%<br>Artım yox</span>
+        <span class="tick">5%</span>
+        <span class="tick">15%</span>
+        <span class="tick">25%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- İş mühiti -->
+  <div class="card">
+    <div class="card-title">
+      <div class="icon">🏢</div>
+      İş Mühiti Məmnuniyyəti
+    </div>
+    <div class="field">
+      <div class="field-header">
+        <div>
+          <div class="field-label">EmpEnvironmentSatisfaction</div>
+          <div class="field-desc">Fiziki iş mühitindən məmnunluq</div>
+        </div>
+        <div class="field-value" id="val-env">2</div>
+      </div>
+      <input type="range" id="env" min="1" max="4" value="2" step="1"
+             oninput="document.getElementById('val-env').textContent=this.value">
+      <div class="tick-row">
+        <span class="tick">1<br>Aşağı</span>
+        <span class="tick">2<br>Orta</span>
+        <span class="tick">3<br>Yüksək</span>
+        <span class="tick">4<br>Çox yüksək</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- İşə bağlılıq -->
+  <div class="card">
+    <div class="card-title">
+      <div class="icon">🎯</div>
+      İşə Bağlılıq
+    </div>
+    <div class="field">
+      <div class="field-header">
+        <div>
+          <div class="field-label">EmpJobInvolvement</div>
+          <div class="field-desc">Öz işinə olan bağlılıq duyğusu</div>
+        </div>
+        <div class="field-value" id="val-inv">2</div>
+      </div>
+      <input type="range" id="inv" min="1" max="4" value="2" step="1"
+             oninput="document.getElementById('val-inv').textContent=this.value">
+      <div class="tick-row">
+        <span class="tick">1<br>Çox az</span>
+        <span class="tick">2<br>Az</span>
+        <span class="tick">3<br>Yüksək</span>
+        <span class="tick">4<br>Çox yüksək</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- İş-həyat balansı -->
+  <div class="card">
+    <div class="card-title">
+      <div class="icon">⚖️</div>
+      İş-Həyat Balansı
+    </div>
+    <div class="field">
+      <div class="field-header">
+        <div>
+          <div class="field-label">EmpWorkLifeBalance</div>
+          <div class="field-desc">İş və şəxsi həyat arasındakı tarazlıq</div>
+        </div>
+        <div class="field-value" id="val-wlb">2</div>
+      </div>
+      <input type="range" id="wlb" min="1" max="4" value="2" step="1"
+             oninput="document.getElementById('val-wlb').textContent=this.value">
+      <div class="tick-row">
+        <span class="tick">1<br>Pis</span>
+        <span class="tick">2<br>Orta</span>
+        <span class="tick">3<br>Yaxşı</span>
+        <span class="tick">4<br>Əla</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- İş məmnuniyyəti -->
+  <div class="card">
+    <div class="card-title">
+      <div class="icon">😊</div>
+      İş Məmnuniyyəti
+    </div>
+    <div class="field">
+      <div class="field-header">
+        <div>
+          <div class="field-label">EmpJobSatisfaction</div>
+          <div class="field-desc">İşindən ümumi məmnunluq səviyyəsi</div>
+        </div>
+        <div class="field-value" id="val-jsat">2</div>
+      </div>
+      <input type="range" id="jsat" min="1" max="4" value="2" step="1"
+             oninput="document.getElementById('val-jsat').textContent=this.value">
+      <div class="tick-row">
+        <span class="tick">1<br>Aşağı</span>
+        <span class="tick">2<br>Orta</span>
+        <span class="tick">3<br>Yüksək</span>
+        <span class="tick">4<br>Çox yüksək</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Saatlıq maaş -->
+  <div class="card">
+    <div class="card-title">
+      <div class="icon">💵</div>
+      Saatlıq Əmək Haqqı
+    </div>
+    <div class="field">
+      <div class="field-header">
+        <div>
+          <div class="field-label">EmpHourlyRate</div>
+          <div class="field-desc">Saatlıq əmək haqqı (əsl valyutada deyil, nisbi)</div>
+        </div>
+        <div class="field-value" id="val-hr">60</div>
+      </div>
+      <input type="range" id="hr" min="30" max="100" value="60" step="1"
+             oninput="document.getElementById('val-hr').textContent=this.value">
+      <div class="tick-row">
+        <span class="tick">30</span>
+        <span class="tick">50</span>
+        <span class="tick">75</span>
+        <span class="tick">100</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Münasibət məmnuniyyəti -->
+  <div class="card">
+    <div class="card-title">
+      <div class="icon">🤝</div>
+      İş Yoldaşları ilə Münasibət
+    </div>
+    <div class="field">
+      <div class="field-header">
+        <div>
+          <div class="field-label">EmpRelationshipSatisfaction</div>
+          <div class="field-desc">Kollektiv içindəki münasibətlər</div>
+        </div>
+        <div class="field-value" id="val-rel">2</div>
+      </div>
+      <input type="range" id="rel" min="1" max="4" value="2" step="1"
+             oninput="document.getElementById('val-rel').textContent=this.value">
+      <div class="tick-row">
+        <span class="tick">1<br>Aşağı</span>
+        <span class="tick">2<br>Orta</span>
+        <span class="tick">3<br>Yüksək</span>
+        <span class="tick">4<br>Çox yüksək</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- OverTime -->
+  <div class="section-label">İş Yükü</div>
+  <div class="card">
+    <div class="toggle-row">
+      <div class="toggle-info">
+        <div class="field-label">Əlavə İş Saatları (OverTime)</div>
+        <small>İşçi müntəzəm olaraq əlavə saat çalışır?</small>
+      </div>
+      <div class="toggle-wrap">
+        <input type="checkbox" id="overtime">
+        <label for="overtime"></label>
+      </div>
+    </div>
+  </div>
+
+  <!-- BUTTON -->
+  <button class="btn" id="btnAnalyze" onclick="analyze()">
+    ⚡ Performansı Qiymətləndir
+  </button>
+
+  <!-- ERROR -->
+  <div class="error-box" id="errorBox"></div>
+
+  <!-- LOADER -->
+  <div class="loader" id="loader">
+    <div class="spinner"></div>
+    <p>Model analiz edir...</p>
+  </div>
+
+  <!-- RESULT -->
+  <div class="result" id="result"></div>
+
+  <!-- DISCLAIMER -->
+  <div class="disclaimer">
+    Bu alət tədqiqat məqsədi ilə hazırlanmışdır.<br>
+    INX Future Inc datasetiinə (IABAC, 2023) əsaslanan Random Forest modeli istifadə edilir.
+  </div>
+
+  <div class="content" style="padding-top:0">
+    <button class="install-footer-btn" onclick="document.getElementById('guideOverlay').classList.add('active')">
+      📲 Telefona Yüklə (iOS / Android)
+    </button>
+  </div>
+
+</div>
+
+<!-- INSTALL GUIDE MODAL -->
+<div class="guide-overlay" id="guideOverlay" onclick="closeGuide(event)">
+  <div class="guide-sheet">
+    <h3>📲 Telefona Necə Yükləmək Olar?</h3>
+    <div class="guide-tab-row">
+      <button class="guide-tab active" onclick="switchTab('ios',this)">🍎 iPhone (Safari)</button>
+      <button class="guide-tab" onclick="switchTab('android',this)">🤖 Android (Chrome)</button>
+    </div>
+
+    <div class="guide-steps active" id="steps-ios">
+      <div class="guide-step">
+        <div class="guide-num">1</div>
+        <p>Bu səhifəni <em>Safari</em> brauzerində açın</p>
+      </div>
+      <div class="guide-step">
+        <div class="guide-num">2</div>
+        <p>Aşağıdakı <em>Paylaş</em> düyməsinə basın (kvadrat + ox işarəsi ↑)</p>
+      </div>
+      <div class="guide-step">
+        <div class="guide-num">3</div>
+        <p>Açılan menyuda <em>"Ana Ekrana Əlavə Et"</em> seçin</p>
+      </div>
+      <div class="guide-step">
+        <div class="guide-num">4</div>
+        <p>Adı saxlayın, <em>"Əlavə Et"</em> düyməsinə basın — app ikon kimi əlavə olunacaq</p>
+      </div>
+    </div>
+
+    <div class="guide-steps" id="steps-android">
+      <div class="guide-step">
+        <div class="guide-num">1</div>
+        <p>Bu səhifəni <em>Chrome</em> brauzerində açın</p>
+      </div>
+      <div class="guide-step">
+        <div class="guide-num">2</div>
+        <p>Sağ yuxarıdakı <em>⋮ menyu</em> düyməsinə basın</p>
+      </div>
+      <div class="guide-step">
+        <div class="guide-num">3</div>
+        <p><em>"Ana ekrana əlavə et"</em> və ya <em>"Install app"</em> seçin</p>
+      </div>
+      <div class="guide-step">
+        <div class="guide-num">4</div>
+        <p><em>"Əlavə et"</em> düyməsinə basın — app ikon kimi qeydiyyatdan keçir</p>
+      </div>
+    </div>
+
+    <button class="guide-close-btn" onclick="document.getElementById('guideOverlay').classList.remove('active')">
+      Anladım ✓
+    </button>
+  </div>
+</div>
+
+<script>
+const LEVELS = {
+  1: { label: "Aşağı Performans", emoji: "⚠️", stars: "★☆☆☆", cls: "level-1",
+       desc: "Bu amil kombinasiyası aşağı performans riski göstərir." },
+  2: { label: "Orta Performans",  emoji: "📊", stars: "★★☆☆", cls: "level-2",
+       desc: "Orta səviyyəli performans gözlənilir. Müəyyən amillər yaxşılaşdırıla bilər." },
+  3: { label: "Yüksək Performans",emoji: "🚀", stars: "★★★☆", cls: "level-3",
+       desc: "Güclü performans göstəriciləri. İşçi yaxşı nəticə göstərməyə meyillidir." },
+  4: { label: "Əla Performans",   emoji: "🏆", stars: "★★★★", cls: "level-4",
+       desc: "Üstün performans. Bu amil kombinasiyası ən yüksək qiymətlərə uyğundur." },
+};
+
+const FEATURES = [
+  { id: "salary", name: "Son maaş artımı",    imp: 0.31, color: "#2E75B6" },
+  { id: "env",    name: "Mühit məmnuniyyəti", imp: 0.18, color: "#253380" },
+  { id: "inv",    name: "İşə bağlılıq",       imp: 0.15, color: "#4A90D9" },
+  { id: "wlb",    name: "İş-həyat balansı",   imp: 0.13, color: "#6BA3C9" },
+  { id: "jsat",   name: "İş məmnuniyyəti",    imp: 0.10, color: "#7FAECC" },
+  { id: "overtime", name: "OverTime (mənfi)", imp: 0.07, color: "#E85D5D" },
+  { id: "hr",     name: "Saatlıq maaş",       imp: 0.05, color: "#A0B9CC" },
+  { id: "rel",    name: "Münasibət məmn.",     imp: 0.01, color: "#C5D5E0" },
+];
+
+function getValues() {
+  return {
+    salary:   parseInt(document.getElementById('salary').value),
+    env:      parseInt(document.getElementById('env').value),
+    inv:      parseInt(document.getElementById('inv').value),
+    wlb:      parseInt(document.getElementById('wlb').value),
+    jsat:     parseInt(document.getElementById('jsat').value),
+    hr:       parseInt(document.getElementById('hr').value),
+    rel:      parseInt(document.getElementById('rel').value),
+    overtime: document.getElementById('overtime').checked ? 1 : 0,
+  };
+}
+
+// Weighted scoring — mimics Random Forest logic from research
+function computeScore(v) {
+  // Normalize each feature to 0–1, apply importance weight
+  const salaryN = v.salary / 25;
+  const envN    = (v.env  - 1) / 3;
+  const invN    = (v.inv  - 1) / 3;
+  const wlbN    = (v.wlb  - 1) / 3;
+  const jsatN   = (v.jsat - 1) / 3;
+  const hrN     = (v.hr   - 30) / 70;
+  const relN    = (v.rel  - 1) / 3;
+  const otN     = v.overtime === 0 ? 1 : 0;   // no overtime → positive
+
+  const score =
+    salaryN * 0.31 +
+    envN    * 0.18 +
+    invN    * 0.15 +
+    wlbN    * 0.13 +
+    jsatN   * 0.10 +
+    otN     * 0.07 +
+    hrN     * 0.05 +
+    relN    * 0.01;
+
+  // score is 0–1; map to 1–4
+  if (score < 0.20) return { level: 1, prob: score / 0.20 };
+  if (score < 0.48) return { level: 2, prob: (score - 0.20) / 0.28 };
+  if (score < 0.75) return { level: 3, prob: (score - 0.48) / 0.27 };
+  return { level: 4, prob: (score - 0.75) / 0.25 };
+}
+
+function buildInsights(v, level) {
+  const chips = [];
+  if (v.salary >= 18) chips.push("💰 Yüksək maaş artımı");
+  if (v.salary === 0)  chips.push("⚠️ Maaş artımı yoxdur");
+  else if (v.salary < 8) chips.push("⚠️ Aşağı maaş artımı");
+  if (v.inv >= 3)     chips.push("🎯 Güclü bağlılıq");
+  if (v.env >= 3)     chips.push("🏢 Yaxşı mühit");
+  if (v.overtime)     chips.push("⏰ OverTime riski");
+  if (v.wlb >= 3)     chips.push("⚖️ Balans yaxşı");
+  if (v.jsat >= 3)    chips.push("😊 Yüksək məmnunluq");
+  return chips;
+}
+
+// Smart local explanation when API unavailable
+function buildLocalExplanation(v, level, info) {
+  // Find top 2 contributing factors
+  const contribs = [
+    { name: "son maaş artımı",      score: (v.salary / 25) * 0.31,           val: `${v.salary}%` },
+    { name: "mühit məmnuniyyəti",   score: ((v.env-1)/3)  * 0.18,            val: `${v.env}/4` },
+    { name: "işə bağlılıq",         score: ((v.inv-1)/3)  * 0.15,            val: `${v.inv}/4` },
+    { name: "iş-həyat balansı",     score: ((v.wlb-1)/3)  * 0.13,            val: `${v.wlb}/4` },
+    { name: "iş məmnuniyyəti",      score: ((v.jsat-1)/3) * 0.10,            val: `${v.jsat}/4` },
+    { name: "overtime yoxluğu",     score: (v.overtime===0?1:0) * 0.07,      val: v.overtime?"Var":"Yox" },
+  ].sort((a,b) => b.score - a.score);
+
+  const top1 = contribs[0];
+  const top2 = contribs[1];
+  const hasOT = v.overtime === 1;
+
+  let text = `Model ${info.label} proqnozu verdi. `;
+  text += `Bunun ən güclü iki səbəbi: ${top1.name} (${top1.val}) və ${top2.name} (${top2.val}) göstəriciləridir. `;
+
+  if (level <= 2) {
+    if (v.salary < 8) text += "Tövsiyə: maaş artımını performansla birbaşa əlaqələndirmək motivasiyanı artıracaq.";
+    else if (v.env < 3) text += "Tövsiyə: iş mühitinin yaxşılaşdırılması performansa müsbət təsir göstərəcək.";
+    else if (hasOT)     text += "Tövsiyə: əlavə iş yükünü azaltmaq uzunmüddətli performansı qoruyacaq.";
+    else                text += "Tövsiyə: işə bağlılığı artırmaq üçün mənalı layihələr verilməlidir.";
+  } else {
+    if (hasOT)    text += "Qeyd: OverTime varlığı uzunmüddətdə performansı aşağı çəkə bilər — diqqət edilməlidir.";
+    else          text += "Bu göstəricilər yüksək performansı dəstəkləyir — mövcud şərtlər qorunmalıdır.";
+  }
+  return text;
+}
+
+async function analyze() {
+  const v = getValues();
+  const btn = document.getElementById('btnAnalyze');
+  const loader = document.getElementById('loader');
+  const resultDiv = document.getElementById('result');
+  const errBox = document.getElementById('errorBox');
+
+  btn.disabled = true;
+  loader.classList.add('active');
+  resultDiv.classList.remove('active');
+  errBox.classList.remove('active');
+
+  // Local model prediction
+  const { level, prob } = computeScore(v);
+  const info = LEVELS[level];
+  const insights = buildInsights(v, level);
+
+  // Build AI explanation via Claude API
+  let aiText = "";
+  try {
+    const prompt = `Aşağıdakı işçi motivasiya məlumatlarına əsaslanaraq, Random Forest modeli ${level} (${info.label}) performans sinifi proqnozu verdi.
+
+Dəyişənlər:
+- Son maaş artımı: ${v.salary}% (əhəmiyyət: 0.31 — ən güclü amil)
+- Mühit məmnuniyyəti: ${v.env}/4 (əhəmiyyət: 0.18)
+- İşə bağlılıq: ${v.inv}/4 (əhəmiyyət: 0.15)
+- İş-həyat balansı: ${v.wlb}/4 (əhəmiyyət: 0.13)
+- İş məmnuniyyəti: ${v.jsat}/4 (əhəmiyyət: 0.10)
+- OverTime: ${v.overtime ? "Var" : "Yox"} (əhəmiyyət: 0.07, mənfi təsir)
+- Saatlıq maaş: ${v.hr} (əhəmiyyət: 0.05)
+- Münasibət məmnuniyyəti: ${v.rel}/4 (əhəmiyyət: 0.01)
+
+Azərbaycan dilində, 2-3 qısa cümlə ilə: Bu proqnozun ən güclü 2 səbəbini izah et və 1 praktik tövsiyə ver. Rəsmi amma anlaşıqlı dildə yaz. "Proqnoz", "model" sözlərindən istifadə et.`;
+
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true"
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 300,
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+    const data = await response.json();
+    if (data.content && data.content[0] && data.content[0].text) {
+      aiText = data.content[0].text;
+    } else {
+      aiText = buildLocalExplanation(v, level, info);
+    }
+  } catch (e) {
+    aiText = buildLocalExplanation(v, level, info);
+  }
+
+  // Build result HTML
+  const probPct = Math.round(Math.min(prob * 100, 98) + 2);
+
+  let factorRows = FEATURES.map(f => {
+    const barW = Math.round(f.imp * 100 / 0.31 * 100);
+    return `<div class="factor-row">
+      <div class="factor-name">${f.name}</div>
+      <div class="factor-bar-bg">
+        <div class="factor-bar-fill" style="width:${barW}%;background:${f.color}"></div>
+      </div>
+      <div class="factor-imp">${f.imp}</div>
+    </div>`;
+  }).join('');
+
+  let chipsHTML = insights.map(c => `<span class="chip">${c}</span>`).join('');
+
+  resultDiv.innerHTML = `
+    <div class="result-card ${info.cls}">
+      <div class="result-level">Performans Proqnozu</div>
+      <div class="result-title">${info.emoji} ${info.label}</div>
+      <div class="result-sub">${info.desc}</div>
+      <div class="stars">${info.stars}</div>
+
+      <div class="prob-section">
+        <div class="prob-label">
+          <span>Sinif ehtimalı</span>
+          <span>${probPct}%</span>
+        </div>
+        <div class="prob-bar-bg">
+          <div class="prob-bar-fill" style="width:0%" id="probFill"></div>
+        </div>
+      </div>
+
+      ${chipsHTML ? `<div class="insights">${chipsHTML}</div>` : ''}
+    </div>
+
+    ${aiText ? `<div class="explanation">
+      <h4>🤖 AI İzahı</h4>
+      <p>${aiText}</p>
+    </div>` : ''}
+
+    <div class="card" style="margin-top:14px">
+      <div class="card-title">
+        <div class="icon" style="background:linear-gradient(135deg,#253380,#1E2761)">📊</div>
+        Amil Əhəmiyyəti (Feature Importance)
+      </div>
+      ${factorRows}
+    </div>
+
+    <button class="btn-reset" onclick="resetForm()">↩ Yenidən Qiymətləndir</button>
+  `;
+
+  loader.classList.remove('active');
+  btn.disabled = false;
+  resultDiv.classList.add('active');
+
+  // Animate prob bar
+  setTimeout(() => {
+    const fill = document.getElementById('probFill');
+    if (fill) fill.style.width = probPct + '%';
+  }, 100);
+
+  // Scroll to result
+  resultDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function resetForm() {
+  document.getElementById('result').classList.remove('active');
+  document.getElementById('btnAnalyze').disabled = false;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function switchTab(os, btn) {
+  document.querySelectorAll('.guide-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.guide-steps').forEach(s => s.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('steps-' + os).classList.add('active');
+}
+
+function closeGuide(e) {
+  if (e.target === document.getElementById('guideOverlay')) {
+    document.getElementById('guideOverlay').classList.remove('active');
+  }
+}
+</script>
+</body>
+</html>
